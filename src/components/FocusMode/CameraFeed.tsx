@@ -12,6 +12,7 @@ const CameraFeed = ({ onFocusStateChange }: CameraFeedProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<tmImage.CustomMobileNet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const { toast } = useToast();
   const animationFrameRef = useRef<number>();
 
@@ -26,6 +27,13 @@ const CameraFeed = ({ onFocusStateChange }: CameraFeedProps) => {
       stopCamera();
     };
   }, []);
+
+  // Start prediction when both model and camera are ready
+  useEffect(() => {
+    if (model && isCameraReady) {
+      startPrediction();
+    }
+  }, [model, isCameraReady]);
 
   const loadModel = async () => {
     try {
@@ -60,7 +68,7 @@ const CameraFeed = ({ onFocusStateChange }: CameraFeedProps) => {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play();
-          startPrediction();
+          setIsCameraReady(true);
         };
       }
     } catch (error) {
